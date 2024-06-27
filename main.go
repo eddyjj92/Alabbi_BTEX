@@ -1,6 +1,8 @@
 package main
 
 import (
+	"Alabbi_BTEX/config"
+	"Alabbi_BTEX/controllers"
 	"embed"
 	"log"
 
@@ -19,18 +21,22 @@ var assets embed.FS
 var icon []byte
 
 func main() {
+
+	config.InitDatabase()
+	conversionController := controllers.NewConversionController()
+	processController := controllers.NewProcessController()
 	// Create an instance of the app structure
 	app := NewApp()
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:             "Alabbi_BTEX",
-		Width:             1024,
-		Height:            768,
-		MinWidth:          1024,
+		Title:  "Alabbi BTEX",
+		Width:  800,
+		Height: 600,
+		/*MinWidth:          1024,
 		MinHeight:         768,
 		MaxWidth:          1280,
-		MaxHeight:         800,
+		MaxHeight:         800,*/
 		DisableResize:     false,
 		Fullscreen:        false,
 		Frameless:         false,
@@ -47,9 +53,11 @@ func main() {
 		OnDomReady:       app.domReady,
 		OnBeforeClose:    app.beforeClose,
 		OnShutdown:       app.shutdown,
-		WindowStartState: options.Normal,
+		WindowStartState: options.Maximised,
 		Bind: []interface{}{
 			app,
+			conversionController,
+			processController,
 		},
 		// Windows platform specific options
 		Windows: &windows.Options{
