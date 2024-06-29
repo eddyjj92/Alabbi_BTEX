@@ -2,11 +2,13 @@ package config
 
 import (
 	"Alabbi_BTEX/models"
+	"context"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 var Db *gorm.DB
+var Ctx context.Context
 
 func InitDatabase() {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})

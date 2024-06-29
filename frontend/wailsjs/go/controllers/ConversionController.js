@@ -6,6 +6,6 @@ export function GetAll() {
   return window['go']['controllers']['ConversionController']['GetAll']();
 }
 
-export function Upload(arg1) {
-  return window['go']['controllers']['ConversionController']['Upload'](arg1);
+export function Upload(arg1, arg2) {
+  return window['go']['controllers']['ConversionController']['Upload'](arg1, arg2);
 }

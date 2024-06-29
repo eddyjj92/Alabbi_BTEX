@@ -35,11 +35,19 @@ onUpdated(() => {
 
             <q-card-section class="q-pt-none">
                 <video width="100%" height="500px" controls autoplay style="border-radius: 10px; background-color: black" preload="metadata" crossorigin="anonymous">
-                    <source :src="`http://localhost:3000/storage/files/${process.outputFolder}/${process.inputFilename}`" type="video/mp4">
-                    <track label="Español"  kind="subtitles" srclang="es" :src="`http://localhost:3000/storage/files/${process.outputFolder}/${process.inputFilename.replace(process.inputFormat, 'vtt')}`" default />
+                    <source :src="`http://localhost:8000/files/${process.outputFolder}/${process.inputFilename}`" type="video/mp4">
+                    <track label="Español"  kind="subtitles" srclang="es" :src="`http://localhost:8000/files/${process.outputFolder}/${process.inputFilename.replace(process.inputFormat, 'vtt')}`" default />
                     Tu navegador no soporta los vídeos de HTML5
-
                 </video>
+              <div class="q-video">
+                <iframe
+                  width="100"
+                  height="500px"
+                  :src="`http://localhost:8000/files/${process.outputFolder}/${process.inputFilename}`"
+                  frameborder="0"
+                  allowfullscreen
+                ></iframe>
+              </div>
             </q-card-section>
         </q-card>
     </q-dialog>

@@ -15,15 +15,6 @@ const props = defineProps({
 const $q = useQuasar()
 let { t, locale } = useI18n({ useScope: 'global' })
 
-
-const loadingOptions = {
-    spinner: QSpinnerFacebook,
-    spinnerColor: 'primary',
-    spinnerSize: 120,
-    backgroundColor: 'black',
-    message: 'Importando Archivo...',
-    messageColor: 'white',
-}
 let openAudio = ref(false)
 let inputFile = ref(null)
 let consola = ref(null)
@@ -84,30 +75,13 @@ const validaRadio = () => {
 
 const setFile = async (e) => {
     if (e.target.files.length > 0){
+      const reader = await new FileReader();
+      await reader.readAsDataURL(e.target.files[0]);
+      reader.onload = async () => {
+        const stringFile = await reader.result
         await consoleAddText(process.consoleLength + " - " + "Importando archivo local..." + "\n")
-        await $q.loading.show(loadingOptions)
-        const result = await uploadFile(e.target.files[0])
-        if (await result && await result.success){
-          consoleAddText(process.consoleLength + " - " + result.data.message + "\n")
-          process.input = result.data.ruta
-          process.inputFilename = result.data.filename
-          process.inputFormat = result.data.extension
-          process.output = result.data.ruta.replace(process.inputFormat, process.outputFormat)
-          process.outputDir = result.data.outputDir
-          process.outputFolder = result.data.folder
-        }else{
-          process.metodo = null
-          if (result.data.response.status === 400){
-            consoleAddText(process.consoleLength + " - Ha ocurrido un error: " + result.data.response.data.validator + "\n")
-          } else {
-            if (result.data.response.data.error){
-              consoleAddText(process.consoleLength + " - Ha ocurrido un error: " + result.data.response.data.error + "\n")
-            }else{
-              consoleAddText(process.consoleLength + " - Ha ocurrido un error: " + result.data.message + "\n")
-            }
-          }
-        }
-        await $q.loading.hide()
+        await uploadFile(stringFile, e.target.files[0].name)
+      };
     }
 }
 
@@ -166,7 +140,8 @@ const changeOutputFormat = () => {
 }
 
 const openDialog = () => {
-    openAudio.value = process.outputDir !== null
+    /*openAudio.value = process.outputDir !== null*/
+  alert("hola")
 }
 </script>
 

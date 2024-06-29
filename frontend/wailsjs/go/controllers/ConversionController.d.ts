@@ -4,4 +4,4 @@ import {models} from '../models';
 
 export function GetAll():Promise<Array<models.Process>>;
 
-export function Upload(arg1:string):Promise<{[key: string]: any}>;
+export function Upload(arg1:string,arg2:string):Promise<{[key: string]: any}>;
