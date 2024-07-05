@@ -1,31 +1,35 @@
 <script setup>
-import { useQuasar, QSpinnerFacebook } from 'quasar'
+import {useQuasar, QSpinnerFacebook, Loading} from 'quasar'
 import {computed, onMounted, onUpdated, reactive, ref} from "vue";
-import PreviewDialog from "components/PreviewDialog.vue";
+import AudioRecord from "components/AudioRecord.vue";
 import { useI18n } from "vue-i18n";
 import {useConversionStore} from "stores/conversion-store.js";
+import {EventsOn} from "app/wailsjs/runtime";
+import {OutputFile} from "app/wailsjs/go/controllers/ConversionController";
 
-const { uploadFile } = useConversionStore();
+const { uploadFile, openVideo, startConversion } = useConversionStore();
 
 const props = defineProps({
   locale: String,
-  model: Object
+  model: Object,
+  threads: Number
 })
 
 const $q = useQuasar()
 let { t, locale } = useI18n({ useScope: 'global' })
 
-let openAudio = ref(false)
+let openRecordAudio = ref(false)
 let inputFile = ref(null)
 let consola = ref(null)
 
 let process = reactive({
+    id: null,
     metodo: null,
     input: '-',
     inputFilename: '-',
     inputFormat: null,
     output: '-',
-    outputFormat: 'text',
+    outputFormat: 'txt',
     outputDir: null,
     outputFolder: null,
     console: '',
@@ -33,12 +37,12 @@ let process = reactive({
     processing: false,
     success: false,
     progress: 0.0,
-    progressLabel: computed(() => (process.progress * 100).toFixed(2) + '%'),
+    progressLabel: computed(() => (process.progress * 100).toFixed(0) + '%'),
     logs: 0
 });
 
 const metodos = [
-    { label: 'local_files', value: 'local' },
+    { label: 'local_file', value: 'local' },
     { label: 'Grabacion por Microfono', value: 'mic' },
     { label: 'Archivos en la Nube', value: 'nube' }
 ]
@@ -53,6 +57,8 @@ onMounted(()=> {
     const historyItem = JSON.parse(localStorage.getItem('historyItem'))
     if (historyItem){
         localStorage.removeItem('historyItem')
+        process.id = historyItem.ID;
+        process.success = historyItem.Status === 1;
         process.metodo = 'local';
         process.input = historyItem.Route + historyItem.Folder +"\\"+ historyItem.File;
         process.inputFilename = historyItem.File;
@@ -60,32 +66,56 @@ onMounted(()=> {
         process.output = process.input.replace(process.inputFormat, process.outputFormat);
         process.outputDir = historyItem.Route + historyItem.Folder;
         process.outputFolder = historyItem.Folder;
-
         openDialog()
     }
 
 })
 
 const validaRadio = () => {
+    process.input = '-';
+    process.output = '-';
+    process.success = false;
     process.progress = 0
     if(process.metodo === "local"){
-        inputFile.value.click()
+      inputFile.value.click()
+    }else if(process.metodo === "mic"){
+      openRecordAudio.value = true;
     }
 }
 
 const setFile = async (e) => {
     if (e.target.files.length > 0){
+      await Loading.show()
       const reader = await new FileReader();
       await reader.readAsDataURL(e.target.files[0]);
       reader.onload = async () => {
         const stringFile = await reader.result
         await consoleAddText(process.consoleLength + " - " + "Importando archivo local..." + "\n")
         await uploadFile(stringFile, e.target.files[0].name)
+          .then(response => {
+            if(response){
+              process.id = response.id;
+              process.input = `${response.folderPath}\\${response.filename}`;
+              process.inputFilename = response.filename;
+              process.inputFormat = response.extension;
+              process.output = process.input.replace(process.inputFormat, process.outputFormat);
+              process.outputDir = response.folderPath
+              process.outputFolder = response.folder;
+            }
+          })
       };
     }
 }
 
 const start = async () => {
+  await EventsOn("porciento", function (number) {
+    process.progress = Number(number)/100
+  })
+  await startConversion(process.id, props.model, process.input, process.outputDir, props.threads)
+    .then(() => {
+      process.processing = !process.processing
+      process.success = true;
+    })
 
 }
 
@@ -101,8 +131,10 @@ const openFolder = async (execute = true) => {
 
 }
 
-const openOutputFile = async (execute = true) => {
-
+const openOutputFile = async () => {
+  await Loading.show()
+  await OutputFile(process.output)
+  await Loading.hide()
 }
 
 const getLogs = async () => {
@@ -139,9 +171,18 @@ const changeOutputFormat = () => {
     process.output = process.input.replace(process.inputFormat, process.outputFormat)
 }
 
-const openDialog = () => {
-    /*openAudio.value = process.outputDir !== null*/
-  alert("hola")
+const openDialog = async () => {
+  await openVideo(process.input)
+}
+
+const savedAudio = (event) => {
+  process.id = event.id;
+  process.input = `${event.folderPath}\\${event.filename}`;
+  process.inputFilename = event.filename;
+  process.inputFormat = event.extension;
+  process.output = process.input.replace(process.inputFormat, process.outputFormat);
+  process.outputDir = event.folderPath
+  process.outputFolder = event.folder;
 }
 </script>
 
@@ -177,17 +218,17 @@ const openDialog = () => {
               <div class="col-2">
                 <div style="width: 100%; cursor: pointer" @click="process.metodo = 'local'; inputFile.click()">
                   <q-avatar class="q-mt-sm" size="33px" rounded>
-                    <img src="/src/assets/img/Local.svg" alt="">
+                    <img src="~assets/img/Local.svg" alt="">
                   </q-avatar>
                 </div>
                 <div style="width: 100%; cursor: pointer" @click="process.metodo = 'mic'">
                   <q-avatar class="q-mt-sm" size="33px" rounded>
-                    <img src="/src/assets/img/Microf.svg" alt="">
+                    <img src="~assets/img/Microf.svg" alt="">
                   </q-avatar>
                 </div>
                 <div style="width: 100%; cursor: pointer" @click="process.metodo = 'nube'">
                   <q-avatar class="q-mt-sm" size="33px" rounded>
-                    <img src="/src/assets/img/nube.svg" alt="">
+                    <img src="~assets/img/nube.svg" alt="">
                   </q-avatar>
                 </div>
               </div>
@@ -208,27 +249,27 @@ const openDialog = () => {
 
           <q-card-section>
             <q-list bordered>
-              <q-item :disable="!process.outputDir" clickable v-ripple >
+              <q-item :disable="process.input === '-'" :clickable="process.input !== '-'" :v-ripple="process.input !== '-'" @click="openDialog">
                 <q-item-section avatar top >
                   <q-avatar class="q-mt-sm" size="33px" rounded>
-                    <img src="/src/assets/img/audio.svg" alt="">
+                    <img src="~assets/img/audio.svg" alt="">
                   </q-avatar>
                 </q-item-section>
 
-                <q-item-section @click="openFolder(process.outputDir)">
+                <q-item-section>
                   <q-item-label lines="1">Audio</q-item-label>
                   <q-item-label style="font-size: 12px">{{ process.input }}</q-item-label>
                 </q-item-section>
 
-                <q-item-section side @click="openDialog">
+                <q-item-section side>
                   <q-icon name="play_circle" color="green" />
                 </q-item-section>
               </q-item>
               <q-separator/>
-              <q-item :disable="!process.success" clickable v-ripple @click="openOutputFile">
+              <q-item :disable="!process.success" :clickable="process.success" :v-ripple="process.success" @click="openOutputFile">
                 <q-item-section avatar top>
                   <q-avatar class="q-mt-sm" size="33px" rounded>
-                    <img src="/src/assets/img/Texto.svg" alt="">
+                    <img src="~assets/img/Texto.svg" alt="">
                   </q-avatar>
                 </q-item-section>
 
@@ -238,7 +279,7 @@ const openDialog = () => {
                 </q-item-section>
 
                 <q-item-section side>
-                  <q-icon name="info" color="green" />
+                  <q-icon name="file_open" color="green" />
                 </q-item-section>
               </q-item>
             </q-list>
@@ -281,10 +322,11 @@ const openDialog = () => {
             <div class="q-py-sm">
               <div class="text-subtitle2">Formatos de Salida de Texto</div>
               <div class="q-gutter-md">
-                <q-radio size="md" :disable="process.input === '-'" dense v-model="process.outputFormat" @update:model-value="changeOutputFormat" label=".srt" color="teal"  val="srt"/>
-                <q-radio size="md" :disable="process.input === '-'" dense v-model="process.outputFormat" @update:model-value="changeOutputFormat" label=".txt" color="orange"  val="txt" />
-                <q-radio size="md" :disable="process.input === '-'" dense v-model="process.outputFormat" @update:model-value="changeOutputFormat" label=".text" color="red" val="text" />
-                <q-radio size="md" :disable="process.input === '-'" dense v-model="process.outputFormat" @update:model-value="changeOutputFormat" label=".json" color="cyan" val="json" />
+                <q-radio size="md" :disable="process.input === '-'" dense v-model="process.outputFormat" @update:model-value="changeOutputFormat" label="txt" color="primary"  val="txt" />
+                <q-radio size="md" :disable="process.input === '-'" dense v-model="process.outputFormat" @update:model-value="changeOutputFormat" label="text" color="secondary" val="text" />
+                <q-radio size="md" :disable="process.input === '-'" dense v-model="process.outputFormat" @update:model-value="changeOutputFormat" label="srt" color="red"  val="srt"/>
+                <q-radio size="md" :disable="process.input === '-'" dense v-model="process.outputFormat" @update:model-value="changeOutputFormat" label="vtt" color="green"  val="vtt"/>
+                <q-radio size="md" :disable="process.input === '-'" dense v-model="process.outputFormat" @update:model-value="changeOutputFormat" label="json" color="cyan" val="json" />
               </div>
             </div>
 
@@ -293,7 +335,7 @@ const openDialog = () => {
       </div>
     </div>
   </q-page>
-  <PreviewDialog :open="openAudio" :process="process" @close="openAudio = false" />
+  <AudioRecord :open="process.metodo === 'mic'" :process="process" @close="process.metodo = null" @save="savedAudio($event)" />
 </template>
 <style lang="sass" scoped>
 .my-card

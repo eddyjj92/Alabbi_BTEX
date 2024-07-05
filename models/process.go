@@ -10,4 +10,5 @@ type Process struct {
 	Extension string
 	Folder    string
 	Route     string
+	Status    int8
 }

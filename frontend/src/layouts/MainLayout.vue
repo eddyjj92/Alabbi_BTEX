@@ -28,6 +28,7 @@ const modelos = [
   { label: 'Grande (Prioridad: Eficiencia)', value: 'large-v2' }
 ]
 
+let threads = ref(2)
 </script>
 
 <template>
@@ -145,12 +146,27 @@ const modelos = [
             />
           </q-item-section>
         </q-item>
+        <q-separator spaced />
 
+        <q-item-label header class="text-bold q-pb-xs">{{$t('Subprocesos')}}</q-item-label>
+
+        <q-item class="q-px-sm q-pa-none">
+          <q-item-section>
+            <q-slider
+              v-model="threads"
+              marker-labels
+              :min="1"
+              :max="8"
+              class="q-mx-sm"
+              style="max-width: 95%"
+            />
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 
     <q-page-container>
-      <router-view :locale="locale" :model="modelo" />
+      <router-view :locale="locale" :model="modelo" :threads="threads" />
     </q-page-container>
 
   </q-layout>

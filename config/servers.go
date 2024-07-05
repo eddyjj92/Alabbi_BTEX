@@ -2,9 +2,7 @@ package config
 
 import (
 	"fmt"
-	"mime"
 	"net/http"
-	"path/filepath"
 )
 
 func StartFileServer() {
@@ -15,7 +13,7 @@ func StartFileServer() {
 	// Ruteo de archivos
 	http.Handle("/", corsFileServer)
 	// Dirección y puerto del servidor
-	addr := ":8000"
+	addr := ":8001"
 	fmt.Printf("Servidor de archivos escuchando en %s...", addr)
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		panic(err)
@@ -33,12 +31,4 @@ func corsMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func fileHandler(w http.ResponseWriter, r *http.Request) {
-	filePath := "." + r.URL.Path
-	ext := filepath.Ext(filePath)
-	mimeType := mime.TypeByExtension(ext)
-	w.Header().Set("Content-Type", mimeType)
-	http.ServeFile(w, r, filePath)
 }
