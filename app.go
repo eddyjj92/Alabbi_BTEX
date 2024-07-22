@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Alabbi_BTEX/config"
 	"context"
 	"fmt"
 )
@@ -19,6 +20,8 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	// Perform your setup here
 	a.ctx = ctx
+	config.Ctx = ctx
+	config.StartFileServer()
 }
 
 // domReady is called after front-end resources have been loaded
