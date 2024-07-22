@@ -310,7 +310,12 @@ const savedAudio = (event) => {
 
           <q-card-section>
             <div class="q-pb-md q-gutter-sm">
-              <q-btn :disable="process.processing || process.input === '-'" @click="initProcess" color="primary" icon="play_circle" label="Iniciar" />
+              <q-btn :loading="process.processing" :style="process.processing ? 'width: 150px': ''" :disable="process.processing || process.input === '-'" @click="initProcess" color="primary" icon="play_circle" label="Iniciar" >
+                <template v-slot:loading>
+                  <q-spinner-hourglass class="on-left q-mx-xs" />
+                  Procesando...
+                </template>
+              </q-btn>
               <q-btn :disable="!process.processing" @click="cancelProcess" color="red" icon="stop_circle" label="Parar" />
             </div>
             <q-linear-progress stripe rounded size="25px" :value="process.progress" color="primary">

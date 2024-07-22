@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, ref} from 'vue'
 import {useI18n} from "vue-i18n";
-import {useQuasar} from "quasar";
+import {Loading, useQuasar} from "quasar";
 import es from 'quasar/lang/es';
 
 
@@ -29,6 +29,17 @@ const modelos = [
 ]
 
 let threads = ref(2)
+
+
+
+const cancelLoading = () => {
+  alert(Loading.isActive)
+  if (Loading.isActive){
+    Loading.hide()
+  }else{
+    Loading.show()
+  }
+}
 </script>
 
 <template>

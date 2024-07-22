@@ -4,7 +4,7 @@ import {Loading, QSpinnerFacebook, QSpinnerGears} from "quasar";
 
 export const useConversionStore = defineStore('conversion', () =>{
 
-  const loadingOptions = {
+  const loadingOptionsUpload = {
     spinner: QSpinnerFacebook,
     spinnerColor: 'primary',
     spinnerSize: 120,
@@ -19,13 +19,13 @@ export const useConversionStore = defineStore('conversion', () =>{
     spinnerSize: 150,
     backgroundColor: 'black',
     message: '<span class="text-subtitle1 text-bold">Previsualizando Archivo de <b>Audio o Video.</b></span><br>' +
-             '<span class="text-amber text-italic">Cierre el reproductor para desbloquear la ventana...</span>',
+             '<span class="text-amber text-italic">Cierre el reproductor para desbloquear la ventana...',
     html: true,
     messageColor: 'white',
   }
 
   async function uploadFile(file, filename) {
-    await Loading.show(loadingOptions)
+    await Loading.show(loadingOptionsUpload)
     return Upload(file, filename, filename.split('.').pop())
       .then(function (res) {
          return res
@@ -49,7 +49,6 @@ export const useConversionStore = defineStore('conversion', () =>{
   }
 
   async function startConversion(id, model, input, outputDir, threads) {
-    await Loading.show(loadingOptionsPreview)
     return Start(id, model, input, outputDir, Number(threads))
       .then(function (res) {
         return res
@@ -57,9 +56,17 @@ export const useConversionStore = defineStore('conversion', () =>{
       .catch(function (error) {
         return false
       })
-      .finally(() => Loading.hide())
   }
+
+
+
 
   return { uploadFile, openVideo, startConversion }
 
 })
+
+
+function closeLoading(){
+  alert("hola")
+  Loading.hide()
+}
