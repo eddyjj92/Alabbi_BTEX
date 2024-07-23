@@ -11,7 +11,7 @@ var Db *gorm.DB
 var Ctx context.Context
 
 func InitDatabase() {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("btex_db.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

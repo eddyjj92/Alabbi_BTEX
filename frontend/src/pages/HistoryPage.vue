@@ -1,6 +1,6 @@
 <script setup>
-import { useQuasar, QSpinnerFacebook } from 'quasar'
-import {computed, onMounted, reactive, ref} from "vue";
+import { useQuasar, } from 'quasar'
+import { onMounted, ref} from "vue";
 import {useProcessStore} from "stores/process-store.js";
 import {useRouter} from "vue-router";
 import {storeToRefs} from "pinia";
@@ -32,7 +32,7 @@ onMounted(async () => {
 
 const preview = () => {
     localStorage.setItem('historyItem', JSON.stringify(selected.value[0]))
-    router.push({ path : '/' })
+    router.push({ path : '/conversion' })
 }
 
 const removeProcess  = async () => {
