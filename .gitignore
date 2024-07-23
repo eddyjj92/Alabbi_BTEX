@@ -1,4 +1,5 @@
+.idea
 *.exe
 *.cache
 storage
-build
+build/bin
