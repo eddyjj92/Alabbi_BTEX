@@ -3,7 +3,13 @@
 </script>
 
 <template>
-  <router-view class="absolute-full"/>
+  <transition
+    appear
+    enter-active-class="animated fadeIn"
+    leave-active-class="animated fadeOut"
+  >
+    <router-view class="absolute-full"/>
+  </transition>
 </template>
 
 <style scoped>

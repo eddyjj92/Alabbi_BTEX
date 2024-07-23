@@ -73,7 +73,7 @@ const cancelLoading = () => {
       <q-list bordered padding class="rounded-borders" style="max-width: 350px">
         <q-item-label header class="text-bold q-pb-xs">{{$t('main_menu')}}</q-item-label>
 
-        <q-item to="/" clickable v-ripple>
+        <q-item to="/conversion" clickable v-ripple>
           <q-item-section avatar top>
             <q-avatar rounded>
               <img src="~assets/img/Conversión.svg" alt="">
@@ -177,7 +177,13 @@ const cancelLoading = () => {
     </q-drawer>
 
     <q-page-container>
-      <router-view :locale="locale" :model="modelo" :threads="threads" />
+      <transition
+        appear
+        enter-active-class="animated fadeIn"
+        leave-active-class="animated fadeOut"
+      >
+        <router-view :locale="locale" :model="modelo" :threads="threads" />
+      </transition>
     </q-page-container>
 
   </q-layout>
